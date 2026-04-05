@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ISI Messenger • Telegram WebApp</title>
+    <title>ISI Messenger • Real-time Chat</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -25,21 +22,18 @@
             --text-dim: #808080;
             --success: #2e8b57;
             --error: #b22222;
-            --warning: #ff8c00;
             --telegram: #0088cc;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-dark);
             color: var(--text);
             height: 100vh;
             overflow: hidden;
-            margin: 0;
-            padding: 0;
         }
 
-        /* Telegram WebApp стилі */
+        /* Telegram Header */
         .telegram-header {
             background: var(--telegram);
             padding: 12px 16px;
@@ -72,35 +66,33 @@
         }
 
         .telegram-status {
-            font-size: 12px;
+            font-size: 11px;
             opacity: 0.8;
         }
 
-        .telegram-logout {
+        .logout-btn {
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
             padding: 8px 12px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 14px;
         }
 
-        /* Основний контейнер */
+        /* App Container */
         .app-container {
             display: flex;
             height: calc(100vh - 64px);
         }
 
-        /* Бічна панель */
+        /* Sidebar */
         .sidebar {
-            width: 280px;
+            width: 260px;
             background: var(--bg-medium);
             border-right: 1px solid #2a2a3a;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            transition: transform 0.3s ease;
         }
 
         .sidebar-header {
@@ -114,13 +106,8 @@
             color: var(--accent-light);
         }
 
-        .sidebar-header p {
-            font-size: 11px;
-            color: var(--text-dim);
-        }
-
         .nav-item {
-            padding: 12px 20px;
+            padding: 14px 20px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -129,29 +116,20 @@
             border-left: 3px solid transparent;
         }
 
-        .nav-item:hover {
-            background: var(--bg-light);
-        }
-
-        .nav-item.active {
+        .nav-item:hover, .nav-item.active {
             background: var(--bg-light);
             border-left-color: var(--accent);
         }
 
-        .nav-icon {
-            font-size: 20px;
-            width: 24px;
-        }
-
-        .online-count {
+        .online-badge {
             background: var(--success);
-            padding: 2px 6px;
+            padding: 2px 8px;
             border-radius: 10px;
             font-size: 11px;
             margin-left: auto;
         }
 
-        /* Чат область */
+        /* Chat Area */
         .chat-area {
             flex: 1;
             display: flex;
@@ -173,7 +151,7 @@
             font-size: 18px;
         }
 
-        .typing-indicator {
+        .typing-status {
             font-size: 12px;
             color: var(--text-dim);
         }
@@ -202,7 +180,6 @@
             padding: 10px 14px;
             border-radius: 18px;
             word-wrap: break-word;
-            position: relative;
         }
 
         .message:not(.own) .message-bubble {
@@ -235,7 +212,6 @@
             border-top: 1px solid #2a2a3a;
             display: flex;
             gap: 12px;
-            align-items: center;
         }
 
         .input-area input {
@@ -257,17 +233,12 @@
             background: var(--accent);
             border: none;
             color: white;
-            padding: 12px 20px;
+            padding: 12px 24px;
             border-radius: 24px;
             cursor: pointer;
-            transition: all 0.2s;
         }
 
-        .input-area button:hover {
-            background: var(--accent-light);
-        }
-
-        /* Модальне вікно */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -300,7 +271,7 @@
             color: var(--text);
         }
 
-        .telegram-login-btn {
+        .telegram-btn {
             background: var(--telegram);
             color: white;
             padding: 12px;
@@ -309,11 +280,40 @@
             width: 100%;
             cursor: pointer;
             font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .regular-btn {
+            background: var(--accent);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            width: 100%;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .user-item {
+            background: var(--bg-light);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
+            font-size: 20px;
+            font-weight: bold;
         }
 
         @keyframes fadeIn {
@@ -326,13 +326,13 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* Мобільна версія */
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
-                left: -280px;
+                left: -260px;
                 z-index: 99;
                 height: 100%;
+                transition: left 0.3s;
             }
             .sidebar.open {
                 left: 0;
@@ -360,62 +360,53 @@
     </style>
 </head>
 <body>
-    <!-- Telegram Header -->
     <div id="telegramHeader" class="telegram-header" style="display: none;">
         <div class="telegram-avatar" id="telegramAvatar">👤</div>
         <div class="telegram-info">
             <div class="telegram-name" id="telegramName"></div>
-            <div class="telegram-status" id="telegramStatus">Telegram WebApp</div>
+            <div class="telegram-status">Telegram WebApp</div>
         </div>
-        <button class="telegram-logout" onclick="logout()">Вийти</button>
+        <button class="logout-btn" onclick="logout()">Вийти</button>
     </div>
 
     <div class="app-container">
-        <!-- Бічна панель -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h1>ISI</h1>
-                <p>I See Internet • Telegram</p>
+                <p>I See Internet</p>
             </div>
-            
             <div class="nav-item active" onclick="showChat()">
-                <span class="nav-icon">💬</span>
-                <span>Чат</span>
-                <span class="online-count" id="onlineCount">0</span>
+                <span>💬</span> Чат
+                <span class="online-badge" id="onlineCount">0</span>
             </div>
             <div class="nav-item" onclick="showUsers()">
-                <span class="nav-icon">👥</span>
-                <span>Користувачі</span>
+                <span>👥</span> Користувачі
             </div>
             <div class="nav-item" onclick="showRadio()">
-                <span class="nav-icon">🎵</span>
-                <span>I see Radio</span>
+                <span>🎵</span> I see Radio
             </div>
             <div class="nav-item" onclick="showSettings()">
-                <span class="nav-icon">⚙️</span>
-                <span>Налаштування</span>
+                <span>⚙️</span> Налаштування
             </div>
         </div>
 
-        <!-- Основна область -->
-        <div class="chat-area" id="chatArea">
+        <div class="chat-area">
             <div class="chat-header">
                 <div>
                     <div class="chat-title" id="chatTitle">ISI Messenger</div>
-                    <div class="typing-indicator" id="typingIndicator"></div>
+                    <div class="typing-status" id="typingStatus"></div>
                 </div>
-                <div id="connectionStatus">🟢 Підключено</div>
+                <div id="connectionStatus">🟢 Онлайн</div>
             </div>
-            
             <div class="messages-container" id="messagesContainer">
                 <div style="text-align: center; color: var(--text-dim); padding: 40px;">
-                    👋 Ласкаво просимо до ISI Messenger!<br>
-                    Увійдіть через Telegram, щоб почати спілкування
+                    👋 Ласкаво просимо!<br>
+                    Увійдіть щоб почати спілкування
                 </div>
             </div>
-            
             <div class="input-area" id="inputArea" style="display: none;">
-                <input type="text" id="messageInput" placeholder="Введіть повідомлення..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <input type="text" id="messageInput" placeholder="Введіть повідомлення..." 
+                       onkeypress="if(event.key==='Enter') sendMessage()">
                 <button onclick="sendMessage()">📤 Надіслати</button>
             </div>
         </div>
@@ -423,183 +414,332 @@
 
     <button class="menu-toggle" onclick="toggleSidebar()" style="display: none;">☰</button>
 
-    <!-- Модальне вікно входу -->
+    <!-- Login Modal -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <h2 style="text-align: center; margin-bottom: 20px;">🔐 ISI Messenger</h2>
-            
-            <button class="telegram-login-btn" onclick="loginWithTelegram()">
-                <span>📱</span> Увійти через Telegram
+            <button class="telegram-btn" onclick="loginWithTelegram()">
+                📱 Увійти через Telegram
             </button>
-            
+            <div style="text-align: center; margin: 15px 0; color: var(--text-dim);">або</div>
+            <input type="text" id="loginUsername" placeholder="Логін або UIN">
+            <input type="password" id="loginPassword" placeholder="Пароль">
+            <button class="regular-btn" onclick="regularLogin()">🔓 Звичайний вхід</button>
+            <div style="text-align: center; margin-top: 15px;">
+                <a href="#" onclick="showRegisterForm()" style="color: var(--accent-light);">Немає акаунту? Зареєструватися</a>
+            </div>
             <div id="loginStatus" style="margin-top: 15px; text-align: center; font-size: 12px;"></div>
         </div>
     </div>
 
-    <script>
-        // ==================== КОНФІГУРАЦІЯ FIREBASE ====================
-        // Створіть проект у Firebase Console та замініть ці дані
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            databaseURL: "https://YOUR_DATABASE_URL.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+    <!-- Register Modal -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <h2 style="text-align: center; margin-bottom: 20px;">📝 Реєстрація</h2>
+            <input type="text" id="regUsername" placeholder="Ім'я користувача">
+            <input type="email" id="regEmail" placeholder="Email">
+            <input type="password" id="regPassword" placeholder="Пароль">
+            <input type="password" id="regConfirm" placeholder="Повторіть пароль">
+            <button class="regular-btn" onclick="register()">✅ Зареєструватися</button>
+            <div id="regStatus" style="margin-top: 15px; text-align: center; font-size: 12px;"></div>
+        </div>
+    </div>
 
-        // Ініціалізація Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+    <script>
+        // ==================== КОНФІГУРАЦІЯ ====================
+        // ЗМІНІТЬ ЦЕ НА ВАШ PYTHONANYWHERE URL
+        const API_URL = "https://YOUR_USERNAME.pythonanywhere.com";
         
         // ==================== ГЛОБАЛЬНІ ЗМІННІ ====================
         let currentUser = null;
-        let onlineUsers = new Set();
-        let currentRoom = 'global';
-        let typingTimeout = null;
+        let lastMessageId = 0;
+        let pollingInterval = null;
+        let typingInterval = null;
+        let isTyping = false;
         let telegramWebApp = null;
-        let messagesRef = null;
-        let typingRef = null;
-        let usersRef = null;
+        let onlineUsers = new Set();
 
-        // ==================== ІНІЦІАЛІЗАЦІЯ TELEGRAM ====================
+        // ==================== ІНІЦІАЛІЗАЦІЯ ====================
         function initTelegramWebApp() {
             if (window.Telegram && window.Telegram.WebApp) {
                 telegramWebApp = window.Telegram.WebApp;
                 telegramWebApp.ready();
                 telegramWebApp.expand();
                 
-                // Налаштування кнопки "Назад"
-                telegramWebApp.BackButton.onClick(() => {
-                    if (document.querySelector('.sidebar.open')) {
-                        toggleSidebar();
-                    } else {
-                        telegramWebApp.close();
-                    }
-                });
-                
                 const user = telegramWebApp.initDataUnsafe?.user;
                 if (user) {
                     document.getElementById('telegramHeader').style.display = 'flex';
                     document.getElementById('telegramName').innerHTML = `${user.first_name} ${user.last_name || ''}`;
                     document.getElementById('telegramAvatar').innerHTML = user.first_name?.charAt(0) || '👤';
-                    
-                    // Автоматичний вхід через Telegram
                     loginWithTelegramData(user);
                 } else {
-                    // Показуємо модальне вікно якщо не в Telegram
                     document.getElementById('loginModal').style.display = 'flex';
                 }
             } else {
-                // Не в Telegram - показуємо демо режим
                 document.getElementById('loginModal').style.display = 'flex';
-                document.getElementById('loginStatus').innerHTML = '💡 Відкрийте через Telegram для авторизації';
             }
         }
 
+        // ==================== АВТОРИЗАЦІЯ ====================
         async function loginWithTelegramData(telegramUser) {
-            // Зберігаємо користувача
-            currentUser = {
-                id: telegramUser.id.toString(),
-                username: `${telegramUser.first_name} ${telegramUser.last_name || ''}`.trim(),
-                first_name: telegramUser.first_name,
-                last_name: telegramUser.last_name || '',
-                telegram_id: telegramUser.id.toString(),
-                photo_url: telegramUser.photo_url,
-                uin: `TG${telegramUser.id.toString().slice(-6)}`
-            };
+            try {
+                const response = await fetch(`${API_URL}/api/telegram/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        telegram_id: telegramUser.id,
+                        first_name: telegramUser.first_name,
+                        last_name: telegramUser.last_name || '',
+                        username: telegramUser.username
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    currentUser = data.user;
+                    document.getElementById('loginModal').style.display = 'none';
+                    startMessaging();
+                    showChat();
+                    showNotification(`✅ Ласкаво просимо, ${currentUser.username}!`, 'success');
+                } else {
+                    showLoginStatus('❌ Помилка входу', true);
+                }
+            } catch (error) {
+                showLoginStatus('❌ Помилка підключення', true);
+            }
+        }
+
+        async function regularLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
             
-            document.getElementById('loginModal').style.display = 'none';
+            if (!username || !password) {
+                showLoginStatus('❌ Введіть логін та пароль', true);
+                return;
+            }
             
-            // Ініціалізація Firebase слухачів
-            initFirebaseListeners();
+            try {
+                const response = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    currentUser = data.user;
+                    document.getElementById('loginModal').style.display = 'none';
+                    startMessaging();
+                    showChat();
+                    showNotification(`✅ Ласкаво просимо, ${currentUser.username}!`, 'success');
+                } else {
+                    showLoginStatus(`❌ ${data.message}`, true);
+                }
+            } catch (error) {
+                showLoginStatus('❌ Помилка підключення', true);
+            }
+        }
+
+        async function register() {
+            const username = document.getElementById('regUsername').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const confirm = document.getElementById('regConfirm').value.trim();
             
-            showChat();
-            showNotification(`✅ Ласкаво просимо, ${currentUser.username}!`, 'success');
+            if (!username || !password) {
+                showRegStatus('❌ Заповніть обов\'язкові поля', true);
+                return;
+            }
             
-            // Відправляємо статус онлайн
+            if (password !== confirm) {
+                showRegStatus('❌ Паролі не співпадають', true);
+                return;
+            }
+            
+            if (password.length < 4) {
+                showRegStatus('❌ Пароль мінімум 4 символи', true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/api/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    currentUser = data.user;
+                    document.getElementById('registerModal').style.display = 'none';
+                    document.getElementById('loginModal').style.display = 'none';
+                    startMessaging();
+                    showChat();
+                    showNotification(data.message, 'success');
+                } else {
+                    showRegStatus(`❌ ${data.message}`, true);
+                }
+            } catch (error) {
+                showRegStatus('❌ Помилка реєстрації', true);
+            }
+        }
+
+        // ==================== ОСНОВНА ЛОГІКА ====================
+        function startMessaging() {
+            // Оновлюємо статус онлайн
             updateOnlineStatus(true);
+            
+            // Починаємо polling повідомлень
+            startPolling();
+            
+            // Починаємо перевірку статусу друку
+            startTypingPolling();
+            
+            // Оновлюємо онлайн статус кожні 30 секунд
+            setInterval(() => updateOnlineStatus(true), 30000);
+            
+            // Оновлюємо список онлайн користувачів
+            setInterval(updateOnlineUsers, 5000);
         }
 
-        // ==================== FIREBASE РЕАЛЬНИЙ ЧАС ====================
-        function initFirebaseListeners() {
-            if (!currentUser) return;
+        function startPolling() {
+            if (pollingInterval) clearInterval(pollingInterval);
             
-            // Слухаємо повідомлення
-            messagesRef = database.ref(`messages/${currentRoom}`);
-            messagesRef.on('child_added', (snapshot) => {
-                const message = snapshot.val();
-                if (message) {
-                    addMessageToChat(message);
-                }
-            });
-            
-            // Слухаємо статус друку
-            typingRef = database.ref(`typing/${currentRoom}`);
-            typingRef.on('value', (snapshot) => {
-                const typing = snapshot.val();
-                if (typing && typing.user !== currentUser.id && typing.isTyping) {
-                    document.getElementById('typingIndicator').innerHTML = `${typing.username} друкує...`;
-                    setTimeout(() => {
-                        if (document.getElementById('typingIndicator').innerHTML.includes(typing.username)) {
-                            document.getElementById('typingIndicator').innerHTML = '';
+            pollingInterval = setInterval(async () => {
+                if (!currentUser) return;
+                
+                try {
+                    const url = `${API_URL}/api/messages?after_id=${lastMessageId}`;
+                    const response = await fetch(url);
+                    const messages = await response.json();
+                    
+                    for (const msg of messages) {
+                        if (msg.id > lastMessageId) {
+                            lastMessageId = msg.id;
+                            addMessageToChat(msg);
                         }
-                    }, 1500);
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
                 }
-            });
-            
-            // Слухаємо онлайн користувачів
-            usersRef = database.ref('users/online');
-            usersRef.on('value', (snapshot) => {
-                const users = snapshot.val();
-                onlineUsers.clear();
-                if (users) {
-                    Object.keys(users).forEach(id => {
-                        if (users[id].online && id !== currentUser.id) {
-                            onlineUsers.add(users[id].username);
-                        }
-                    });
-                }
-                updateOnlineCount();
-            });
+            }, 1000);
         }
 
-        function sendMessage() {
+        function startTypingPolling() {
+            if (typingInterval) clearInterval(typingInterval);
+            
+            typingInterval = setInterval(async () => {
+                if (!currentUser) return;
+                
+                try {
+                    const response = await fetch(`${API_URL}/api/typing/get/global`);
+                    const data = await response.json();
+                    
+                    if (data.typing && data.typing.length > 0) {
+                        const typingUsers = data.typing.filter(u => u !== currentUser.username);
+                        if (typingUsers.length > 0) {
+                            document.getElementById('typingStatus').innerHTML = `${typingUsers.join(', ')} ${typingUsers.length === 1 ? 'друкує' : 'друкують'}...`;
+                        } else {
+                            document.getElementById('typingStatus').innerHTML = '';
+                        }
+                    } else {
+                        document.getElementById('typingStatus').innerHTML = '';
+                    }
+                } catch (error) {
+                    console.error('Typing polling error:', error);
+                }
+            }, 800);
+        }
+
+        async function sendMessage() {
             const input = document.getElementById('messageInput');
             const text = input.value.trim();
             
             if (!text || !currentUser) return;
             
-            const message = {
-                id: Date.now().toString(),
-                sender: currentUser.username,
-                sender_id: currentUser.id,
-                text: text,
-                time: new Date().toISOString(),
-                type: 'text'
-            };
-            
-            // Відправляємо в Firebase
-            database.ref(`messages/${currentRoom}`).push(message);
-            
-            input.value = '';
-            
-            // Зупиняємо індикацію друку
-            if (typingRef) {
-                typingRef.set({ user: currentUser.id, username: currentUser.username, isTyping: false });
+            try {
+                const response = await fetch(`${API_URL}/api/messages/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sender_id: currentUser.id,
+                        sender_name: currentUser.username,
+                        sender_uin: currentUser.uin,
+                        message: text,
+                        room: 'global'
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    input.value = '';
+                    sendTypingStatus(false);
+                }
+            } catch (error) {
+                showNotification('❌ Помилка відправки', 'error');
             }
-            
-            scrollToBottom();
         }
 
-        function addMessageToChat(message, animate = true) {
+        async function sendTypingStatus(typing) {
+            if (!currentUser) return;
+            
+            try {
+                await fetch(`${API_URL}/api/typing`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        room: 'global',
+                        user_id: currentUser.id,
+                        username: currentUser.username,
+                        is_typing: typing
+                    })
+                });
+            } catch (error) {
+                console.error('Typing error:', error);
+            }
+        }
+
+        async function updateOnlineStatus(isOnline) {
+            if (!currentUser) return;
+            
+            try {
+                await fetch(`${API_URL}/api/online`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: currentUser.id,
+                        username: currentUser.username,
+                        is_online: isOnline
+                    })
+                });
+            } catch (error) {
+                console.error('Online status error:', error);
+            }
+        }
+
+        async function updateOnlineUsers() {
+            try {
+                const response = await fetch(`${API_URL}/api/online/list`);
+                const users = await response.json();
+                onlineUsers.clear();
+                users.forEach(user => {
+                    if (user.id !== currentUser?.id) {
+                        onlineUsers.add(user.username);
+                    }
+                });
+                document.getElementById('onlineCount').innerHTML = onlineUsers.size;
+            } catch (error) {
+                console.error('Online users error:', error);
+            }
+        }
+
+        // ==================== UI ФУНКЦІЇ ====================
+        function addMessageToChat(message) {
             const container = document.getElementById('messagesContainer');
             const isOwn = message.sender_id === currentUser?.id;
             
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isOwn ? 'own' : ''}`;
-            if (animate) messageDiv.style.animation = 'fadeIn 0.3s';
             
             const time = new Date(message.time).toLocaleTimeString();
             
@@ -613,114 +753,72 @@
             scrollToBottom();
         }
 
-        function onTyping() {
-            if (!typingRef || !currentUser) return;
-            
-            typingRef.set({ 
-                user: currentUser.id, 
-                username: currentUser.username, 
-                isTyping: true 
-            });
-            
-            if (typingTimeout) clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                typingRef.set({ user: currentUser.id, username: currentUser.username, isTyping: false });
-            }, 1000);
-        }
-
-        function updateOnlineStatus(isOnline) {
-            if (!currentUser) return;
-            
-            const userStatusRef = database.ref(`users/online/${currentUser.id}`);
-            if (isOnline) {
-                userStatusRef.set({
-                    username: currentUser.username,
-                    online: true,
-                    last_seen: Date.now()
-                });
-                
-                // Видаляємо статус при закритті
-                window.addEventListener('beforeunload', () => {
-                    userStatusRef.set({ online: false });
-                });
-            } else {
-                userStatusRef.set({ online: false });
-            }
-        }
-
-        // ==================== UI ФУНКЦІЇ ====================
         function showChat() {
             document.getElementById('chatTitle').innerHTML = '💬 Глобальний чат';
             document.getElementById('inputArea').style.display = 'flex';
             
             if (currentUser) {
-                // Очищаємо контейнер перед завантаженням
+                loadMessages();
+            }
+            
+            setActiveNav('chat');
+            closeSidebarOnMobile();
+        }
+
+        async function loadMessages() {
+            try {
+                const response = await fetch(`${API_URL}/api/messages?limit=50`);
+                const messages = await response.json();
+                
                 const container = document.getElementById('messagesContainer');
                 container.innerHTML = '';
                 
-                // Завантажуємо останні 50 повідомлень
-                database.ref(`messages/${currentRoom}`)
-                    .orderByKey()
-                    .limitToLast(50)
-                    .once('value', (snapshot) => {
-                        const messages = [];
-                        snapshot.forEach((child) => {
-                            messages.push(child.val());
-                        });
-                        messages.reverse().forEach(msg => addMessageToChat(msg, false));
-                    });
-            }
-            
-            // Активний стан меню
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            event.target.closest('.nav-item').classList.add('active');
-            
-            // Закриваємо сайдбар на мобільних
-            if (window.innerWidth <= 768) {
-                toggleSidebar();
+                messages.forEach(msg => {
+                    addMessageToChat(msg);
+                    if (msg.id > lastMessageId) {
+                        lastMessageId = msg.id;
+                    }
+                });
+            } catch (error) {
+                console.error('Load messages error:', error);
             }
         }
 
-        function showUsers() {
+        async function showUsers() {
             document.getElementById('chatTitle').innerHTML = '👥 Користувачі';
             document.getElementById('inputArea').style.display = 'none';
             
-            const container = document.getElementById('messagesContainer');
-            container.innerHTML = '<div class="users-list" style="padding: 20px;"></div>';
-            const usersList = container.querySelector('.users-list');
-            
-            // Отримуємо список онлайн користувачів
-            database.ref('users/online').once('value', (snapshot) => {
-                const users = snapshot.val();
-                if (users) {
-                    Object.keys(users).forEach(id => {
-                        if (id !== currentUser?.id && users[id].online) {
-                            const userDiv = document.createElement('div');
-                            userDiv.className = 'user-item';
-                            userDiv.style.background = 'var(--bg-light)';
-                            userDiv.style.margin = '10px 0';
-                            userDiv.style.padding = '15px';
-                            userDiv.style.borderRadius = '10px';
-                            userDiv.innerHTML = `
-                                <div style="display: flex; align-items: center; gap: 15px;">
-                                    <div class="user-avatar" style="width: 50px; height: 50px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">
-                                        ${users[id].username.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <div style="font-weight: bold;">${escapeHtml(users[id].username)}</div>
-                                        <div style="font-size: 12px; color: var(--success);">🟢 В мережі</div>
-                                    </div>
-                                </div>
-                            `;
-                            usersList.appendChild(userDiv);
-                        }
-                    });
-                }
+            try {
+                const response = await fetch(`${API_URL}/api/users`);
+                const users = await response.json();
                 
-                if (usersList.children.length === 0) {
-                    usersList.innerHTML = '<div style="text-align: center; color: var(--text-dim);">Немає інших користувачів онлайн</div>';
-                }
-            });
+                const container = document.getElementById('messagesContainer');
+                container.innerHTML = '<div style="padding: 20px;"></div>';
+                const usersDiv = container.firstChild;
+                
+                users.forEach(user => {
+                    if (!currentUser || user.id !== currentUser.id) {
+                        const userDiv = document.createElement('div');
+                        userDiv.className = 'user-item';
+                        userDiv.innerHTML = `
+                            <div class="user-avatar">${user.username.charAt(0).toUpperCase()}</div>
+                            <div>
+                                <div style="font-weight: bold;">${escapeHtml(user.username)}</div>
+                                <div style="font-size: 12px; color: var(--text-dim);">UIN: ${user.uin}</div>
+                            </div>
+                            <div style="margin-left: auto; font-size: 12px;">
+                                ${onlineUsers.has(user.username) ? '🟢' : '⚫'}
+                            </div>
+                        `;
+                        usersDiv.appendChild(userDiv);
+                    }
+                });
+            } catch (error) {
+                console.error('Load users error:', error);
+            }
+            
+            setActiveNav('users');
+            closeSidebarOnMobile();
         }
 
         function showRadio() {
@@ -731,18 +829,15 @@
             container.innerHTML = `
                 <div style="text-align: center; padding: 20px;">
                     <h2 style="color: var(--accent-light); margin-bottom: 20px;">🎵 I see Radio</h2>
-                    <div style="margin: 20px 0;">
-                        <button onclick="playRadio('https://online.radioplayer.ua/LuxFM')" style="background: var(--bg-light); border: none; color: white; padding: 15px 30px; margin: 10px; border-radius: 10px; cursor: pointer; width: 200px;">
+                    <div style="display: flex; flex-direction: column; gap: 10px; max-width: 300px; margin: 0 auto;">
+                        <button onclick="playRadio('https://online.radioplayer.ua/LuxFM')" style="background: var(--bg-light); border: none; color: white; padding: 15px; border-radius: 10px; cursor: pointer;">
                             🎵 Радіо Люкс FM
                         </button>
-                        <button onclick="playRadio('https://radio.uatv.ua/player/')" style="background: var(--bg-light); border: none; color: white; padding: 15px 30px; margin: 10px; border-radius: 10px; cursor: pointer; width: 200px;">
+                        <button onclick="playRadio('https://radio.uatv.ua/player/')" style="background: var(--bg-light); border: none; color: white; padding: 15px; border-radius: 10px; cursor: pointer;">
                             📰 Україна НОВИНИ
                         </button>
-                        <button onclick="playRadio('https://hitfm.ua/online/')" style="background: var(--bg-light); border: none; color: white; padding: 15px 30px; margin: 10px; border-radius: 10px; cursor: pointer; width: 200px;">
+                        <button onclick="playRadio('https://hitfm.ua/online/')" style="background: var(--bg-light); border: none; color: white; padding: 15px; border-radius: 10px; cursor: pointer;">
                             🎸 Hit FM
-                        </button>
-                        <button onclick="playRadio('https://radio.nrcu.gov.ua/stream/ur1')" style="background: var(--bg-light); border: none; color: white; padding: 15px 30px; margin: 10px; border-radius: 10px; cursor: pointer; width: 200px;">
-                            🎙️ Українське Радіо
                         </button>
                     </div>
                     <div id="radioStatus" style="margin-top: 20px; padding: 15px; background: var(--bg-light); border-radius: 10px;">
@@ -753,6 +848,9 @@
                     </button>
                 </div>
             `;
+            
+            setActiveNav('radio');
+            closeSidebarOnMobile();
         }
 
         let audioPlayer = null;
@@ -762,10 +860,8 @@
                 audioPlayer.pause();
             }
             audioPlayer = new Audio(url);
-            audioPlayer.play().catch(e => {
-                console.error('Play error:', e);
+            audioPlayer.play().catch(() => {
                 document.getElementById('radioStatus').innerHTML = '❌ Помилка відтворення';
-                showNotification('❌ Не вдалося відтворити радіо', 'error');
             });
             document.getElementById('radioStatus').innerHTML = '▶ Грає';
             showNotification('🎵 Радіо увімкнено', 'success');
@@ -776,7 +872,6 @@
                 audioPlayer.pause();
                 audioPlayer = null;
                 document.getElementById('radioStatus').innerHTML = '⏹ Зупинено';
-                showNotification('⏹ Радіо зупинено', 'info');
             }
         }
 
@@ -792,38 +887,47 @@
                         ${currentUser ? `
                             <p><strong>Ім'я:</strong> ${currentUser.username}</p>
                             <p><strong>UIN:</strong> ${currentUser.uin}</p>
-                            <p><strong>Telegram ID:</strong> ${currentUser.telegram_id}</p>
-                            <p><strong>Статус:</strong> <span style="color: var(--success);">🟢 В мережі</span></p>
-                        ` : '<p>Увійдіть для перегляду профілю</p>'}
-                    </div>
-                    <div style="background: var(--bg-light); border-radius: 15px; padding: 20px; margin-bottom: 15px;">
-                        <h3 style="color: var(--accent-light); margin-bottom: 15px;">🌐 Система</h3>
-                        <p><strong>Платформа:</strong> Firebase Realtime Database</p>
-                        <p><strong>Авторизація:</strong> Telegram WebApp</p>
-                        <p><strong>Режим:</strong> ${telegramWebApp ? 'Telegram WebApp' : 'Web'}</p>
+                            <p><strong>ID:</strong> ${currentUser.id}</p>
+                        ` : '<p>Увійдіть для перегляду</p>'}
                     </div>
                     <div style="background: var(--bg-light); border-radius: 15px; padding: 20px;">
                         <h3 style="color: var(--accent-light); margin-bottom: 15px;">ℹ️ Про програму</h3>
                         <p><strong>ISI Messenger</strong> v3.0.0</p>
-                        <p>I See Internet • Telegram Integration</p>
-                        <p>Реальний час через Firebase</p>
+                        <p>I See Internet • Real-time Chat</p>
+                        <p>Сервер: PythonAnywhere</p>
                         <hr style="margin: 15px 0; border-color: #2a2a3a;">
-                        <p style="font-size: 12px; color: var(--text-dim);">© 2024 ISI Messenger. Всі права захищено.</p>
+                        <p style="font-size: 12px; color: var(--text-dim);">© 2024 ISI Messenger</p>
                     </div>
                 </div>
             `;
+            
+            setActiveNav('settings');
+            closeSidebarOnMobile();
         }
 
-        function loginWithTelegram() {
-            if (telegramWebApp) {
-                telegramWebApp.showAlert('Будь ласка, перезапустіть WebApp для авторизації');
-            } else {
-                window.open('https://t.me/ISI_Messenger_Bot', '_blank');
+        function setActiveNav(page) {
+            const navs = document.querySelectorAll('.nav-item');
+            navs.forEach((nav, index) => {
+                nav.classList.remove('active');
+                if ((page === 'chat' && index === 0) ||
+                    (page === 'users' && index === 1) ||
+                    (page === 'radio' && index === 2) ||
+                    (page === 'settings' && index === 3)) {
+                    nav.classList.add('active');
+                }
+            });
+        }
+
+        function onTyping() {
+            if (!isTyping && currentUser) {
+                isTyping = true;
+                sendTypingStatus(true);
+                
+                setTimeout(() => {
+                    isTyping = false;
+                    sendTypingStatus(false);
+                }, 2000);
             }
-        }
-
-        function updateOnlineCount() {
-            document.getElementById('onlineCount').innerHTML = onlineUsers.size;
         }
 
         function scrollToBottom() {
@@ -847,13 +951,12 @@
                     buttons: [{ type: 'ok' }]
                 });
             } else {
-                // Створюємо сповіщення
                 const notification = document.createElement('div');
                 notification.style.cssText = `
                     position: fixed;
                     bottom: 20px;
                     right: 20px;
-                    background: ${type === 'error' ? 'var(--error)' : type === 'success' ? 'var(--success)' : 'var(--accent)'};
+                    background: ${type === 'error' ? 'var(--error)' : 'var(--success)'};
                     color: white;
                     padding: 12px 20px;
                     border-radius: 10px;
@@ -866,31 +969,52 @@
             }
         }
 
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('open');
-            
+        function showLoginStatus(msg, isError) {
+            const status = document.getElementById('loginStatus');
+            status.innerHTML = msg;
+            status.style.color = isError ? 'var(--error)' : 'var(--success)';
+        }
+
+        function showRegStatus(msg, isError) {
+            const status = document.getElementById('regStatus');
+            status.innerHTML = msg;
+            status.style.color = isError ? 'var(--error)' : 'var(--success)';
+        }
+
+        function showRegisterForm() {
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('registerModal').style.display = 'flex';
+        }
+
+        function loginWithTelegram() {
             if (telegramWebApp) {
-                if (sidebar.classList.contains('open')) {
-                    telegramWebApp.BackButton.show();
-                } else {
-                    telegramWebApp.BackButton.hide();
-                }
+                telegramWebApp.close();
+            } else {
+                window.open('https://t.me/ISI_Messenger_Bot', '_blank');
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function closeSidebarOnMobile() {
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('open');
             }
         }
 
         function logout() {
             if (currentUser) {
                 updateOnlineStatus(false);
-                if (messagesRef) messagesRef.off();
-                if (typingRef) typingRef.off();
-                if (usersRef) usersRef.off();
             }
+            if (pollingInterval) clearInterval(pollingInterval);
+            if (typingInterval) clearInterval(typingInterval);
             currentUser = null;
             location.reload();
         }
 
-        // Додаємо обробник подій
+        // Event listeners
         document.addEventListener('DOMContentLoaded', () => {
             initTelegramWebApp();
             
@@ -899,7 +1023,6 @@
                 messageInput.addEventListener('input', onTyping);
             }
             
-            // Показуємо кнопку меню на мобільних
             if (window.innerWidth <= 768) {
                 document.querySelector('.menu-toggle').style.display = 'block';
             }
