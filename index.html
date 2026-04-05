@@ -2,700 +2,908 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISI • I See Internet</title>
-    
-    <!-- Іконка сайту (ваша картинка) -->
-    <link rel="icon" type="image/png" href="https://i.ibb.co/69wqs7T/Untitled76-20260305213201.png">
-    <link rel="apple-touch-icon" href="https://i.ibb.co/69wqs7T/Untitled76-20260305213201.png">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ISI Messenger • Telegram WebApp</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-medium: #14141f;
+            --bg-light: #1e1e2f;
+            --accent: #0066cc;
+            --accent-light: #4d94ff;
+            --text: #ffffff;
+            --text-dim: #808080;
+            --success: #2e8b57;
+            --error: #b22222;
+            --warning: #ff8c00;
+            --telegram: #0088cc;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
-            color: white;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
-        }
-        
-        /* Анімований фон */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(14, 107, 168, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(30, 139, 195, 0.1) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        /* Хедер з іконкою */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 0;
-            border-bottom: 2px solid rgba(14, 107, 168, 0.3);
-            margin-bottom: 50px;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .logo-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            height: 100vh;
             overflow: hidden;
-            animation: float 3s ease-in-out infinite;
+            margin: 0;
+            padding: 0;
         }
-        
-        .logo-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .logo-text h1 {
-            font-size: 48px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #fff 0%, #0e6ba8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: 2px;
-        }
-        
-        .logo-text p {
-            color: #888;
-            font-size: 18px;
-            letter-spacing: 1px;
-        }
-        
-        .version {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 10px 25px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            font-size: 16px;
-            color: #0e6ba8;
-            font-weight: bold;
-        }
-        
-        /* Головні картки */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 50px;
-        }
-        
-        .card {
-            background: rgba(26, 26, 46, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 30px;
-            padding: 30px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .card::before {
-            content: '';
-            position: absolute;
+
+        /* Telegram WebApp стилі */
+        .telegram-header {
+            background: var(--telegram);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
             top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #0e6ba8, #1e8bc3, #0e6ba8);
-            transform: translateX(-100%);
-            transition: transform 0.5s ease;
+            z-index: 100;
         }
-        
-        .card:hover::before {
-            transform: translateX(0);
-        }
-        
-        .card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(14, 107, 168, 0.3);
-            border-color: #0e6ba8;
-        }
-        
-        .card-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 20px rgba(14, 107, 168, 0.5));
-        }
-        
-        .card h3 {
-            font-size: 24px;
-            margin-bottom: 15px;
-            color: #0e6ba8;
-        }
-        
-        .card p {
-            color: #aaa;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-        
-        .card .feature {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #888;
-            margin-bottom: 10px;
-        }
-        
-        .card .feature::before {
-            content: '✓';
-            color: #2e8b57;
-            font-weight: bold;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #0e6ba8, #1e8bc3);
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            font-weight: bold;
-            margin-top: 20px;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        
-        .btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(14, 107, 168, 0.4);
-        }
-        
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        /* Секція радіо */
-        .radio-section {
-            background: rgba(14, 107, 168, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 40px;
-            padding: 40px;
-            margin-bottom: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .radio-title {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        
-        .radio-title h2 {
-            font-size: 36px;
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .radio-stations {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        
-        .station {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 20px;
-            padding: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .station:hover {
-            background: rgba(14, 107, 168, 0.3);
-            transform: scale(1.02);
-        }
-        
-        .station.lux {
-            background: rgba(255, 215, 0, 0.2);
-        }
-        
-        .station.lux:hover {
-            background: rgba(255, 215, 0, 0.3);
-        }
-        
-        .station.lux .station-name {
-            color: #FFD700;
-        }
-        
-        .station.news {
-            background: rgba(30, 144, 255, 0.2);
-        }
-        
-        .station.news:hover {
-            background: rgba(30, 144, 255, 0.3);
-        }
-        
-        .station.news .station-name {
-            color: #1E90FF;
-        }
-        
-        .station-name {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        
-        .station-status {
-            color: #888;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .playing {
-            color: #2e8b57;
-        }
-        
-        .playing::before {
-            content: '▶';
-            margin-right: 5px;
-        }
-        
-        /* Статистика */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            text-align: center;
-            margin-bottom: 50px;
-        }
-        
-        .stat-item {
-            background: rgba(26, 26, 46, 0.5);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .stat-number {
-            font-size: 48px;
-            font-weight: bold;
-            color: #0e6ba8;
-            margin-bottom: 10px;
-        }
-        
-        .stat-label {
-            color: #888;
-            font-size: 16px;
-        }
-        
-        /* Футер */
-        .footer {
-            text-align: center;
-            padding: 40px 0;
-            color: #666;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .footer a {
-            color: #0e6ba8;
-            text-decoration: none;
-        }
-        
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .social-link {
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.1);
+
+        .telegram-avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            transition: all 0.3s ease;
+            font-size: 20px;
         }
-        
-        .social-link:hover {
-            background: #0e6ba8;
-            transform: scale(1.1);
+
+        .telegram-info {
+            flex: 1;
         }
-        
-        /* Спливаюче вікно плеєра */
-        .player-popup {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: rgba(26, 26, 46, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
+
+        .telegram-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .telegram-status {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .telegram-logout {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Основний контейнер */
+        .app-container {
+            display: flex;
+            height: calc(100vh - 64px);
+        }
+
+        /* Бічна панель */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-medium);
+            border-right: 1px solid #2a2a3a;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
             padding: 20px;
-            border: 1px solid #0e6ba8;
-            display: none;
-            z-index: 1000;
-            min-width: 300px;
+            text-align: center;
+            border-bottom: 1px solid #2a2a3a;
         }
-        
-        .player-popup.active {
-            display: block;
-            animation: slideIn 0.3s ease;
+
+        .sidebar-header h1 {
+            font-size: 28px;
+            color: var(--accent-light);
         }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+
+        .sidebar-header p {
+            font-size: 11px;
+            color: var(--text-dim);
         }
-        
-        .player-header {
+
+        .nav-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-light);
+        }
+
+        .nav-item.active {
+            background: var(--bg-light);
+            border-left-color: var(--accent);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            width: 24px;
+        }
+
+        .online-count {
+            background: var(--success);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            margin-left: auto;
+        }
+
+        /* Чат область */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-dark);
+        }
+
+        .chat-header {
+            padding: 16px 20px;
+            background: var(--bg-medium);
+            border-bottom: 1px solid #2a2a3a;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
-        .player-title {
+
+        .chat-title {
             font-weight: bold;
-            color: #0e6ba8;
-        }
-        
-        .player-close {
-            cursor: pointer;
-            color: #ff4444;
-            font-size: 20px;
-        }
-        
-        .player-station {
             font-size: 18px;
-            margin-bottom: 10px;
         }
-        
-        .player-controls {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
+
+        .typing-indicator {
+            font-size: 12px;
+            color: var(--text-dim);
         }
-        
-        .player-btn {
+
+        .messages-container {
             flex: 1;
-            padding: 10px;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 70%;
+            animation: fadeIn 0.3s;
+        }
+
+        .message.own {
+            align-self: flex-end;
+        }
+
+        .message-bubble {
+            padding: 10px 14px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        .message:not(.own) .message-bubble {
+            background: var(--bg-light);
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.own .message-bubble {
+            background: var(--accent);
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-sender {
+            font-size: 11px;
+            margin-bottom: 4px;
+            padding-left: 8px;
+            color: var(--text-dim);
+        }
+
+        .message-time {
+            font-size: 10px;
+            margin-top: 4px;
+            padding: 0 8px;
+            color: var(--text-dim);
+        }
+
+        .input-area {
+            padding: 16px 20px;
+            background: var(--bg-medium);
+            border-top: 1px solid #2a2a3a;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            background: var(--bg-light);
+            border: none;
+            border-radius: 24px;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .input-area input:focus {
+            outline: none;
+            background: #2a2a3a;
+        }
+
+        .input-area button {
+            background: var(--accent);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .input-area button:hover {
+            background: var(--accent-light);
+        }
+
+        /* Модальне вікно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-medium);
+            border-radius: 20px;
+            width: 400px;
+            max-width: 90%;
+            padding: 30px;
+            animation: slideIn 0.3s;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: var(--bg-light);
+            border: 1px solid #2a2a3a;
+            border-radius: 10px;
+            color: var(--text);
+        }
+
+        .telegram-login-btn {
+            background: var(--telegram);
+            color: white;
+            padding: 12px;
             border: none;
             border-radius: 10px;
+            width: 100%;
             cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
         }
-        
-        .player-btn.play {
-            background: #2e8b57;
-            color: white;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        
-        .player-btn.stop {
-            background: #b22222;
-            color: white;
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
-        
-        .player-btn:hover {
-            transform: scale(1.05);
-        }
-        
+
         /* Мобільна версія */
         @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                text-align: center;
-                gap: 20px;
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                z-index: 99;
+                height: 100%;
             }
-            
-            .logo {
-                flex-direction: column;
+            .sidebar.open {
+                left: 0;
             }
-            
-            .logo-text h1 {
-                font-size: 36px;
+            .message {
+                max-width: 85%;
             }
-            
-            .grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .radio-stations {
-                grid-template-columns: 1fr;
+            .menu-toggle {
+                display: block;
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background: var(--accent);
+                border: none;
+                color: white;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                font-size: 24px;
+                cursor: pointer;
+                z-index: 100;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Хедер з іконкою -->
-        <div class="header">
-            <div class="logo">
-                <div class="logo-icon">
-                    <img src="https://i.ibb.co/69wqs7T/Untitled76-20260305213201.png" alt="ISI Logo">
-                </div>
-                <div class="logo-text">
-                    <h1>I See Internet</h1>
-                    <p>Мессенджер майбутнього</p>
-                </div>
-            </div>
-            <div class="version">
-                ⚡ v2.0.0
-            </div>
+    <!-- Telegram Header -->
+    <div id="telegramHeader" class="telegram-header" style="display: none;">
+        <div class="telegram-avatar" id="telegramAvatar">👤</div>
+        <div class="telegram-info">
+            <div class="telegram-name" id="telegramName"></div>
+            <div class="telegram-status" id="telegramStatus">Telegram WebApp</div>
         </div>
-        
-        <!-- Головні картки -->
-        <div class="grid">
-            <div class="card">
-                <div class="card-icon">💬</div>
-                <h3>ICQ-стайл чат</h3>
-                <p>Справжній ICQ вайб з сучасним дизайном. UIN, статуси, контакти - все як ви пам'ятаєте!</p>
-                <div class="feature">Миттєві повідомлення</div>
-                <div class="feature">Список контактів</div>
-                <div class="feature">Статуси онлайн</div>
-                <a href="#" class="btn" onclick="downloadApp()">Завантажити</a>
+        <button class="telegram-logout" onclick="logout()">Вийти</button>
+    </div>
+
+    <div class="app-container">
+        <!-- Бічна панель -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>ISI</h1>
+                <p>I See Internet • Telegram</p>
             </div>
             
-            <div class="card">
-                <div class="card-icon">🎵</div>
-                <h3>I see Radio</h3>
-                <p>Українське радіо прямо в месенджері. Слухайте улюблені станції безкоштовно!</p>
-                <div class="feature">Радіо Люкс FM</div>
-                <div class="feature">Україна НОВИНИ</div>
-                <div class="feature">Ще більше станцій скоро</div>
-                <a href="#" class="btn btn-secondary" onclick="showRadio()">Слухати онлайн</a>
+            <div class="nav-item active" onclick="showChat()">
+                <span class="nav-icon">💬</span>
+                <span>Чат</span>
+                <span class="online-count" id="onlineCount">0</span>
+            </div>
+            <div class="nav-item" onclick="showUsers()">
+                <span class="nav-icon">👥</span>
+                <span>Користувачі</span>
+            </div>
+            <div class="nav-item" onclick="showRadio()">
+                <span class="nav-icon">🎵</span>
+                <span>I see Radio</span>
+            </div>
+            <div class="nav-item" onclick="showSettings()">
+                <span class="nav-icon">⚙️</span>
+                <span>Налаштування</span>
+            </div>
+        </div>
+
+        <!-- Основна область -->
+        <div class="chat-area" id="chatArea">
+            <div class="chat-header">
+                <div>
+                    <div class="chat-title" id="chatTitle">ISI Messenger</div>
+                    <div class="typing-indicator" id="typingIndicator"></div>
+                </div>
+                <div id="connectionStatus">🟢 Підключено</div>
             </div>
             
-            <div class="card">
-                <div class="card-icon">🔐</div>
-                <h3>Безпека</h3>
-                <p>Ваші дані під захистом. Шифрування, два фактори, конфіденційність.</p>
-                <div class="feature">Наскрізне шифрування</div>
-                <div class="feature">Двофакторна аутентифікація</div>
-                <div class="feature">Видалення повідомлень</div>
-                <a href="#" class="btn btn-secondary">Детальніше</a>
-            </div>
-        </div>
-        
-        <!-- Секція радіо -->
-        <div class="radio-section" id="radioSection">
-            <div class="radio-title">
-                <span class="card-icon">📻</span>
-                <h2>I see Radio (Ukraine)</h2>
+            <div class="messages-container" id="messagesContainer">
+                <div style="text-align: center; color: var(--text-dim); padding: 40px;">
+                    👋 Ласкаво просимо до ISI Messenger!<br>
+                    Увійдіть через Telegram, щоб почати спілкування
+                </div>
             </div>
             
-            <div class="radio-stations">
-                <div class="station lux" onclick="playRadio('lux')">
-                    <div class="station-name">🎵 Радіо Люкс</div>
-                    <div class="station-status">
-                        <span class="playing" id="luxStatus">Грає зараз</span>
-                        <span>• 128 kbps</span>
-                    </div>
-                    <div style="margin-top: 10px; font-size: 14px; color: #FFD700;">Жовтим текстом HD</div>
-                </div>
-                
-                <div class="station news" onclick="playRadio('news')">
-                    <div class="station-name">📰 Україна НОВИНИ</div>
-                    <div class="station-status">
-                        <span>24/7 Новини</span>
-                        <span>• 192 kbps</span>
-                    </div>
-                    <div style="margin-top: 10px; font-size: 14px; color: #1E90FF;">Прямий ефір</div>
-                </div>
+            <div class="input-area" id="inputArea" style="display: none;">
+                <input type="text" id="messageInput" placeholder="Введіть повідомлення..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()">📤 Надіслати</button>
             </div>
-        </div>
-        
-        <!-- Статистика -->
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-number">10k+</div>
-                <div class="stat-label">Користувачів</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">24/7</div>
-                <div class="stat-label">Радіо ефір</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">100%</div>
-                <div class="stat-label">Безкоштовно</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">#1</div>
-                <div class="stat-label">В Україні</div>
-            </div>
-        </div>
-        
-        <!-- Call to Action -->
-        <div style="text-align: center; margin-bottom: 50px;">
-            <h2 style="font-size: 36px; margin-bottom: 20px;">Готові приєднатися?</h2>
-            <p style="color: #aaa; margin-bottom: 30px; font-size: 18px;">Завантажте ISI Messenger прямо зараз</p>
-            <a href="#" class="btn" style="font-size: 20px; padding: 15px 50px;" onclick="downloadApp()">📥 Завантажити для Windows</a>
-        </div>
-        
-        <!-- Футер -->
-        <div class="footer">
-            <div class="social-links">
-                <a href="#" class="social-link">📘</a>
-                <a href="#" class="social-link">🐦</a>
-                <a href="#" class="social-link">📷</a>
-                <a href="#" class="social-link">🎵</a>
-            </div>
-            <p>© 2026 I See Internet. Всі права захищено.</p>
-            <p>Зроблено в Україні з ❤️</p>
-            <p style="margin-top: 20px;">
-                <a href="#">Про нас</a> • 
-                <a href="#">Блог</a> • 
-                <a href="#">Підтримка</a> • 
-                <a href="#">API</a>
-            </p>
         </div>
     </div>
-    
-    <!-- Плеєр (спливаюче вікно) -->
-    <div class="player-popup" id="playerPopup">
-        <div class="player-header">
-            <span class="player-title">🎵 I see Radio</span>
-            <span class="player-close" onclick="closePlayer()">✕</span>
-        </div>
-        <div class="player-station" id="currentStation">Радіо Люкс</div>
-        <audio id="radioAudio" controls style="width: 100%;"></audio>
-        <div class="player-controls">
-            <button class="player-btn play" onclick="resumeRadio()">▶ Грати</button>
-            <button class="player-btn stop" onclick="stopRadio()">⏹ Стоп</button>
+
+    <button class="menu-toggle" onclick="toggleSidebar()" style="display: none;">☰</button>
+
+    <!-- Модальне вікно входу -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h2 style="text-align: center; margin-bottom: 20px;">🔐 ISI Messenger</h2>
+            
+            <button class="telegram-login-btn" onclick="loginWithTelegram()">
+                <span>📱</span> Увійти через Telegram
+            </button>
+            
+            <div id="loginStatus" style="margin-top: 15px; text-align: center; font-size: 12px;"></div>
         </div>
     </div>
-    
+
     <script>
-        // Змінні для плеєра
-        let currentAudio = null;
-        let currentStationName = '';
+        // ==================== КОНФІГУРАЦІЯ FIREBASE ====================
+        // Створіть проект у Firebase Console та замініть ці дані
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "https://YOUR_DATABASE_URL.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Ініціалізація Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
         
-        // Функції для радіо
-        function playRadio(station) {
-            const audio = document.getElementById('radioAudio');
-            const player = document.getElementById('playerPopup');
-            const stationName = document.getElementById('currentStation');
+        // ==================== ГЛОБАЛЬНІ ЗМІННІ ====================
+        let currentUser = null;
+        let onlineUsers = new Set();
+        let currentRoom = 'global';
+        let typingTimeout = null;
+        let telegramWebApp = null;
+        let messagesRef = null;
+        let typingRef = null;
+        let usersRef = null;
+
+        // ==================== ІНІЦІАЛІЗАЦІЯ TELEGRAM ====================
+        function initTelegramWebApp() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                telegramWebApp = window.Telegram.WebApp;
+                telegramWebApp.ready();
+                telegramWebApp.expand();
+                
+                // Налаштування кнопки "Назад"
+                telegramWebApp.BackButton.onClick(() => {
+                    if (document.querySelector('.sidebar.open')) {
+                        toggleSidebar();
+                    } else {
+                        telegramWebApp.close();
+                    }
+                });
+                
+                const user = telegramWebApp.initDataUnsafe?.user;
+                if (user) {
+                    document.getElementById('telegramHeader').style.display = 'flex';
+                    document.getElementById('telegramName').innerHTML = `${user.first_name} ${user.last_name || ''}`;
+                    document.getElementById('telegramAvatar').innerHTML = user.first_name?.charAt(0) || '👤';
+                    
+                    // Автоматичний вхід через Telegram
+                    loginWithTelegramData(user);
+                } else {
+                    // Показуємо модальне вікно якщо не в Telegram
+                    document.getElementById('loginModal').style.display = 'flex';
+                }
+            } else {
+                // Не в Telegram - показуємо демо режим
+                document.getElementById('loginModal').style.display = 'flex';
+                document.getElementById('loginStatus').innerHTML = '💡 Відкрийте через Telegram для авторизації';
+            }
+        }
+
+        async function loginWithTelegramData(telegramUser) {
+            // Зберігаємо користувача
+            currentUser = {
+                id: telegramUser.id.toString(),
+                username: `${telegramUser.first_name} ${telegramUser.last_name || ''}`.trim(),
+                first_name: telegramUser.first_name,
+                last_name: telegramUser.last_name || '',
+                telegram_id: telegramUser.id.toString(),
+                photo_url: telegramUser.photo_url,
+                uin: `TG${telegramUser.id.toString().slice(-6)}`
+            };
             
-            if (station === 'lux') {
-                audio.src = 'https://lux.radio.tvstitch.com/kyiv/lux_adv_hd';
-                stationName.textContent = 'Радіо Люкс HD';
-                currentStationName = 'Радіо Люкс';
-            } else if (station === 'news') {
-                audio.src = 'http://91.218.213.49:8000/ur1-mp3';
-                stationName.textContent = 'Україна НОВИНИ';
-                currentStationName = 'Україна НОВИНИ';
+            document.getElementById('loginModal').style.display = 'none';
+            
+            // Ініціалізація Firebase слухачів
+            initFirebaseListeners();
+            
+            showChat();
+            showNotification(`✅ Ласкаво просимо, ${currentUser.username}!`, 'success');
+            
+            // Відправляємо статус онлайн
+            updateOnlineStatus(true);
+        }
+
+        // ==================== FIREBASE РЕАЛЬНИЙ ЧАС ====================
+        function initFirebaseListeners() {
+            if (!currentUser) return;
+            
+            // Слухаємо повідомлення
+            messagesRef = database.ref(`messages/${currentRoom}`);
+            messagesRef.on('child_added', (snapshot) => {
+                const message = snapshot.val();
+                if (message) {
+                    addMessageToChat(message);
+                }
+            });
+            
+            // Слухаємо статус друку
+            typingRef = database.ref(`typing/${currentRoom}`);
+            typingRef.on('value', (snapshot) => {
+                const typing = snapshot.val();
+                if (typing && typing.user !== currentUser.id && typing.isTyping) {
+                    document.getElementById('typingIndicator').innerHTML = `${typing.username} друкує...`;
+                    setTimeout(() => {
+                        if (document.getElementById('typingIndicator').innerHTML.includes(typing.username)) {
+                            document.getElementById('typingIndicator').innerHTML = '';
+                        }
+                    }, 1500);
+                }
+            });
+            
+            // Слухаємо онлайн користувачів
+            usersRef = database.ref('users/online');
+            usersRef.on('value', (snapshot) => {
+                const users = snapshot.val();
+                onlineUsers.clear();
+                if (users) {
+                    Object.keys(users).forEach(id => {
+                        if (users[id].online && id !== currentUser.id) {
+                            onlineUsers.add(users[id].username);
+                        }
+                    });
+                }
+                updateOnlineCount();
+            });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (!text || !currentUser) return;
+            
+            const message = {
+                id: Date.now().toString(),
+                sender: currentUser.username,
+                sender_id: currentUser.id,
+                text: text,
+                time: new Date().toISOString(),
+                type: 'text'
+            };
+            
+            // Відправляємо в Firebase
+            database.ref(`messages/${currentRoom}`).push(message);
+            
+            input.value = '';
+            
+            // Зупиняємо індикацію друку
+            if (typingRef) {
+                typingRef.set({ user: currentUser.id, username: currentUser.username, isTyping: false });
             }
             
-            audio.play();
-            player.classList.add('active');
-            
-            // Оновлюємо статус
-            document.getElementById('luxStatus').innerHTML = '▶ Грає зараз';
+            scrollToBottom();
         }
+
+        function addMessageToChat(message, animate = true) {
+            const container = document.getElementById('messagesContainer');
+            const isOwn = message.sender_id === currentUser?.id;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isOwn ? 'own' : ''}`;
+            if (animate) messageDiv.style.animation = 'fadeIn 0.3s';
+            
+            const time = new Date(message.time).toLocaleTimeString();
+            
+            messageDiv.innerHTML = `
+                ${!isOwn ? `<div class="message-sender">${escapeHtml(message.sender)}</div>` : ''}
+                <div class="message-bubble">${escapeHtml(message.text)}</div>
+                <div class="message-time">${time}</div>
+            `;
+            
+            container.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function onTyping() {
+            if (!typingRef || !currentUser) return;
+            
+            typingRef.set({ 
+                user: currentUser.id, 
+                username: currentUser.username, 
+                isTyping: true 
+            });
+            
+            if (typingTimeout) clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                typingRef.set({ user: currentUser.id, username: currentUser.username, isTyping: false });
+            }, 1000);
+        }
+
+        function updateOnlineStatus(isOnline) {
+            if (!currentUser) return;
+            
+            const userStatusRef = database.ref(`users/online/${currentUser.id}`);
+            if (isOnline) {
+                userStatusRef.set({
+                    username: currentUser.username,
+                    online: true,
+                    last_seen: Date.now()
+                });
+                
+                // Видаляємо статус при закритті
+                window.addEventListener('beforeunload', () => {
+                    userStatusRef.set({ online: false });
+                });
+            } else {
+                userStatusRef.set({ online: false });
+            }
+        }
+
+        // ==================== UI ФУНКЦІЇ ====================
+        function showChat() {
+            document.getElementById('chatTitle').innerHTML = '💬 Глобальний чат';
+            document.getElementById('inputArea').style.display = 'flex';
+            
+            if (currentUser) {
+                // Очищаємо контейнер перед завантаженням
+                const container = document.getElementById('messagesContainer');
+                container.innerHTML = '';
+                
+                // Завантажуємо останні 50 повідомлень
+                database.ref(`messages/${currentRoom}`)
+                    .orderByKey()
+                    .limitToLast(50)
+                    .once('value', (snapshot) => {
+                        const messages = [];
+                        snapshot.forEach((child) => {
+                            messages.push(child.val());
+                        });
+                        messages.reverse().forEach(msg => addMessageToChat(msg, false));
+                    });
+            }
+            
+            // Активний стан меню
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+            
+            // Закриваємо сайдбар на мобільних
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        }
+
+        function showUsers() {
+            document.getElementById('chatTitle').innerHTML = '👥 Користувачі';
+            document.getElementById('inputArea').style.display = 'none';
+            
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '<div class="users-list" style="padding: 20px;"></div>';
+            const usersList = container.querySelector('.users-list');
+            
+            // Отримуємо список онлайн користувачів
+            database.ref('users/online').once('value', (snapshot) => {
+                const users = snapshot.val();
+                if (users) {
+                    Object.keys(users).forEach(id => {
+                        if (id !== currentUser?.id && users[id].online) {
+                            const userDiv = document.createElement('div');
+                            userDiv.className = 'user-item';
+                            userDiv.style.background = 'var(--bg-light)';
+                            userDiv.style.margin = '10px 0';
+                            userDiv.style.padding = '15px';
+                            userDiv.style.borderRadius = '10px';
+                            userDiv.innerHTML = `
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div class="user-avatar" style="width: 50px; height: 50px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                                        ${users[id].username.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: bold;">${escapeHtml(users[id].username)}</div>
+                                        <div style="font-size: 12px; color: var(--success);">🟢 В мережі</div>
+                                    </div>
+                                </div>
+                            `;
+                            usersList.appendChild(userDiv);
+                        }
+                    });
+                }
+                
+                if (usersList.children.length === 0) {
+                    usersList.innerHTML = '<div style="text-align: center; color: var(--text-dim);">Немає інших користувачів онлайн</div>';
+                }
+            });
+        }
+
+        function showRadio() {
+            document.getElementById('chatTitle').innerHTML = '🎵 I see Radio';
+            document.getElementById('inputArea').style.display = 'none';
+            
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <h2 style="color: var(--accent-light); margin-bottom: 20px;">🎵 I see Radio</h2>
+                    <div style="margin: 20px 0;">
+                        <button onclick="playRadio('https://online.radioplayer.ua/LuxFM')" style="background: var(--bg-light); border: none; color: white; padding: 15px 30px; margin: 10px; border-radius: 10px; cursor: pointer; width: 200px;">
+                            🎵 Радіо Люкс FM
+                        </button>
+                        <button onclick="playRadio('https://radio.uatv.ua/player/')" style="background: var(--bg-light); border: none; color: white; padding: 15px 30px; margin: 10px; border-radius: 10px; cursor: pointer; width: 200px;">
+                            📰 Україна НОВИНИ
+                        </button>
+                        <button onclick="playRadio('https://hitfm.ua/online/')" style="background: var(--bg-light); border: none; color: white; padding: 15px 30px; margin: 10px; border-radius: 10px; cursor: pointer; width: 200px;">
+                            🎸 Hit FM
+                        </button>
+                        <button onclick="playRadio('https://radio.nrcu.gov.ua/stream/ur1')" style="background: var(--bg-light); border: none; color: white; padding: 15px 30px; margin: 10px; border-radius: 10px; cursor: pointer; width: 200px;">
+                            🎙️ Українське Радіо
+                        </button>
+                    </div>
+                    <div id="radioStatus" style="margin-top: 20px; padding: 15px; background: var(--bg-light); border-radius: 10px;">
+                        ⏹ Виберіть радіостанцію
+                    </div>
+                    <button onclick="stopRadio()" style="background: var(--error); border: none; color: white; padding: 12px 24px; margin-top: 15px; border-radius: 10px; cursor: pointer;">
+                        ⏹ Зупинити
+                    </button>
+                </div>
+            `;
+        }
+
+        let audioPlayer = null;
         
-        function closePlayer() {
-            const player = document.getElementById('playerPopup');
-            const audio = document.getElementById('radioAudio');
-            audio.pause();
-            player.classList.remove('active');
+        function playRadio(url) {
+            if (audioPlayer) {
+                audioPlayer.pause();
+            }
+            audioPlayer = new Audio(url);
+            audioPlayer.play().catch(e => {
+                console.error('Play error:', e);
+                document.getElementById('radioStatus').innerHTML = '❌ Помилка відтворення';
+                showNotification('❌ Не вдалося відтворити радіо', 'error');
+            });
+            document.getElementById('radioStatus').innerHTML = '▶ Грає';
+            showNotification('🎵 Радіо увімкнено', 'success');
         }
         
         function stopRadio() {
-            const audio = document.getElementById('radioAudio');
-            audio.pause();
-            audio.currentTime = 0;
+            if (audioPlayer) {
+                audioPlayer.pause();
+                audioPlayer = null;
+                document.getElementById('radioStatus').innerHTML = '⏹ Зупинено';
+                showNotification('⏹ Радіо зупинено', 'info');
+            }
         }
-        
-        function resumeRadio() {
-            const audio = document.getElementById('radioAudio');
-            audio.play();
+
+        function showSettings() {
+            document.getElementById('chatTitle').innerHTML = '⚙️ Налаштування';
+            document.getElementById('inputArea').style.display = 'none';
+            
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = `
+                <div style="padding: 20px;">
+                    <div style="background: var(--bg-light); border-radius: 15px; padding: 20px; margin-bottom: 15px;">
+                        <h3 style="color: var(--accent-light); margin-bottom: 15px;">👤 Профіль</h3>
+                        ${currentUser ? `
+                            <p><strong>Ім'я:</strong> ${currentUser.username}</p>
+                            <p><strong>UIN:</strong> ${currentUser.uin}</p>
+                            <p><strong>Telegram ID:</strong> ${currentUser.telegram_id}</p>
+                            <p><strong>Статус:</strong> <span style="color: var(--success);">🟢 В мережі</span></p>
+                        ` : '<p>Увійдіть для перегляду профілю</p>'}
+                    </div>
+                    <div style="background: var(--bg-light); border-radius: 15px; padding: 20px; margin-bottom: 15px;">
+                        <h3 style="color: var(--accent-light); margin-bottom: 15px;">🌐 Система</h3>
+                        <p><strong>Платформа:</strong> Firebase Realtime Database</p>
+                        <p><strong>Авторизація:</strong> Telegram WebApp</p>
+                        <p><strong>Режим:</strong> ${telegramWebApp ? 'Telegram WebApp' : 'Web'}</p>
+                    </div>
+                    <div style="background: var(--bg-light); border-radius: 15px; padding: 20px;">
+                        <h3 style="color: var(--accent-light); margin-bottom: 15px;">ℹ️ Про програму</h3>
+                        <p><strong>ISI Messenger</strong> v3.0.0</p>
+                        <p>I See Internet • Telegram Integration</p>
+                        <p>Реальний час через Firebase</p>
+                        <hr style="margin: 15px 0; border-color: #2a2a3a;">
+                        <p style="font-size: 12px; color: var(--text-dim);">© 2024 ISI Messenger. Всі права захищено.</p>
+                    </div>
+                </div>
+            `;
         }
-        
-        function showRadio() {
-            document.getElementById('radioSection').scrollIntoView({ behavior: 'smooth' });
+
+        function loginWithTelegram() {
+            if (telegramWebApp) {
+                telegramWebApp.showAlert('Будь ласка, перезапустіть WebApp для авторизації');
+            } else {
+                window.open('https://t.me/ISI_Messenger_Bot', '_blank');
+            }
         }
-        
-        function downloadApp() {
-            alert('🚀 Завантаження розпочнеться найближчим часом! А поки що - слухайте радіо 🎵');
+
+        function updateOnlineCount() {
+            document.getElementById('onlineCount').innerHTML = onlineUsers.size;
         }
-        
-        // Анімація при скролі
-        window.addEventListener('scroll', () => {
-            const cards = document.querySelectorAll('.card');
-            cards.forEach(card => {
-                const rect = card.getBoundingClientRect();
-                if (rect.top < window.innerHeight - 100) {
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
+
+        function scrollToBottom() {
+            const container = document.getElementById('messagesContainer');
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showNotification(msg, type) {
+            if (telegramWebApp) {
+                telegramWebApp.showPopup({
+                    title: type === 'error' ? 'Помилка' : 'ISI Messenger',
+                    message: msg,
+                    buttons: [{ type: 'ok' }]
+                });
+            } else {
+                // Створюємо сповіщення
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background: ${type === 'error' ? 'var(--error)' : type === 'success' ? 'var(--success)' : 'var(--accent)'};
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 10px;
+                    z-index: 1000;
+                    animation: slideIn 0.3s;
+                `;
+                notification.innerHTML = msg;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 3000);
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+            
+            if (telegramWebApp) {
+                if (sidebar.classList.contains('open')) {
+                    telegramWebApp.BackButton.show();
+                } else {
+                    telegramWebApp.BackButton.hide();
                 }
-            });
-        });
-        
-        // Привітання
-        console.log('👋 Ласкаво просимо на сайт I See Internet!');
-        console.log('🎵 Слухай радіо, спілкуйся, будь в тренді!');
-        
-        // Динамічний час
-        function updateTime() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('uk-UA');
-            document.title = `ISI • ${timeStr}`;
+            }
         }
-        setInterval(updateTime, 1000);
+
+        function logout() {
+            if (currentUser) {
+                updateOnlineStatus(false);
+                if (messagesRef) messagesRef.off();
+                if (typingRef) typingRef.off();
+                if (usersRef) usersRef.off();
+            }
+            currentUser = null;
+            location.reload();
+        }
+
+        // Додаємо обробник подій
+        document.addEventListener('DOMContentLoaded', () => {
+            initTelegramWebApp();
+            
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.addEventListener('input', onTyping);
+            }
+            
+            // Показуємо кнопку меню на мобільних
+            if (window.innerWidth <= 768) {
+                document.querySelector('.menu-toggle').style.display = 'block';
+            }
+        });
     </script>
 </body>
 </html>
